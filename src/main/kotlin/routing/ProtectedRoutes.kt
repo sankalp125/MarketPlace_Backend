@@ -59,6 +59,24 @@ fun Routing.protectedRoutes() {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "${e.message}"))
                 }
             }
+            get("/my-products"){
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.subject
+                if (userId == null){
+                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token: Missing user ID"))
+                    return@get
+                }
+                try {
+                    val myProducts = ProductRepository.getMyProducts(userId = UUID.fromString(userId))
+                    if (myProducts.isEmpty()){
+                        call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "No products found"))
+                    }else{
+                        call.respond(HttpStatusCode.OK, myProducts)
+                    }
+                }catch (e : Exception){
+                    call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "Error: ${e.message}"))
+                }
+            }
             get("/profile-picture"){
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject
@@ -316,12 +334,8 @@ fun Routing.protectedRoutes() {
                     ErrorResponse(error = "Invalid Token")
                 )
                 try {
-                    val products = ProductRepository.getProductList()
-                    if (products.isEmpty()) {
-                        call.respond(HttpStatusCode.NoContent, ErrorResponse(error = "No product found"))
-                    } else {
-                        call.respond(HttpStatusCode.OK, products)
-                    }
+                    val products = ProductRepository.getProductList(UUID.fromString(userId))
+                    call.respond(HttpStatusCode.OK, products)
                 }catch (e : Exception){
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }

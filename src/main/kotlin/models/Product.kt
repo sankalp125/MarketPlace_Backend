@@ -34,7 +34,7 @@ data class ProductListResponse(
     val productDesc : String,
     val productCategory : String,
     val productCity : String,
-    val productPrice : Double,
+    val productPrice : String,
     val pictureUrl : String
 )
 
@@ -52,4 +52,14 @@ data class ProductDetails(
     val publisherEmail : String,
     val publisherMobileNumber : String,
     val otherPictures : List<String>
+)
+
+@Serializable
+data class MyProductsListResponse(
+    val productId : String,
+    val productImage : String,
+    val productName : String,
+    val productPrice : String,
+    val productDate : String,
+    val productStatus : Boolean
 )

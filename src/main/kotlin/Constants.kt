@@ -11,7 +11,7 @@ object Constants {
     val AUDIENCE = System.getenv("JWT_AUDIENCE") ?: "audience"
     const val ACCESS_TOKEN_VALIDITY_IN_MS = 1_000 * 60 * 15 // 15 minutes
     const val REFRESH_TOKEN_VALIDITY_IN_MS = 1_000 * 60 * 60 * 24 * 7L // 7 days
-    const val PICTURE_URL = "http://localhost:8080/uploads"
+    const val PICTURE_URL = "http://172.31.42.84:8080/uploads"
     //LIVE
 //    const val PICTURE_URL = "https://jmpwebservices-production.up.railway.app/uploads"
 }

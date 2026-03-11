@@ -280,11 +280,7 @@ fun Routing.normalRoutes(){
         get("/get_categories") {
             try {
                 val categories = CategoryRepository.getCategories()
-                if (categories.isNotEmpty()){
-                    call.respond(HttpStatusCode.OK, categories)
-                }else{
-                    call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "No data found!"))
-                }
+                call.respond(HttpStatusCode.OK, categories)
             }catch (e : Exception){
                 call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "${e.localizedMessage}"))
             }
