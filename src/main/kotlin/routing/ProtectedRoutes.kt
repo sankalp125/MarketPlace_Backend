@@ -162,8 +162,8 @@ fun Routing.protectedRoutes() {
                             }
                         } else {
                             try {
-                                UserRepository.updateProfilePicture(UUID.fromString(userId), profilePictureUrl)
-                                call.respond(HttpStatusCode.OK, mapOf("message" to "Profile picture updated successfully"))
+                                val url = UserRepository.updateProfilePicture(UUID.fromString(userId), profilePictureUrl)
+                                call.respond(HttpStatusCode.OK, mapOf("url" to url))
                             } catch (e: Exception) {
                                 return@put call.respond(
                                     HttpStatusCode.InternalServerError,
