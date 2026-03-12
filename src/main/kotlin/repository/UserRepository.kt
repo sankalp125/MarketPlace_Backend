@@ -102,12 +102,13 @@ object UserRepository {
             throw Exception("${e.localizedMessage}")
         }
     }
-    fun updateProfilePicture(userId : UUID, url : String){
+    fun updateProfilePicture(userId : UUID, url : String) : String = transaction{
         try{
             UserTable.update( { UserTable.userId eq userId }){
                 it[photoUrl] = url
                 it[updatedAt] = LocalDateTime.now()
             }
+            getProfilePicture(userId)
         }catch (e : Exception){
             throw Exception(e.localizedMessage)
         }
