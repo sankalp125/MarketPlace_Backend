@@ -87,7 +87,7 @@ object UserRepository {
         }
         updatedRows > 0
     }
-    fun updateProfileDetails(userId : UUID, profileData : UpdateProfileDetailsDto){
+    fun updateProfileDetails(userId : UUID, profileData : UpdateProfileDetailsDto) = transaction{
         try{
             UserTable.update({ UserTable.userId eq userId}){
                 it[userName] = profileData.name
@@ -102,13 +102,12 @@ object UserRepository {
             throw Exception("${e.localizedMessage}")
         }
     }
-    fun updateProfilePicture(userId : UUID, url : String) : String = transaction{
+    fun updateProfilePicture(userId : UUID, url : String)  = transaction{
         try{
             UserTable.update( { UserTable.userId eq userId }){
                 it[photoUrl] = url
                 it[updatedAt] = LocalDateTime.now()
             }
-            getProfilePicture(userId)
         }catch (e : Exception){
             throw Exception(e.localizedMessage)
         }
