@@ -213,7 +213,7 @@ object ProductRepository {
             productId = row[ProductTable.productId].toString(),
             productName = row[ProductTable.productName],
             productImage = row[ProductTable.productPhoto].toString(),
-            productPrice = row[ProductTable.productPrice].toString(),
+            productPrice = row[ProductTable.productPrice],
             productDate = row[ProductTable.productEndDate],
             productStatus = row[ProductTable.active]
         )

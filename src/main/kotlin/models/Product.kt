@@ -59,7 +59,7 @@ data class MyProductsListResponse(
     val productId : String,
     val productImage : String,
     val productName : String,
-    val productPrice : String,
+    val productPrice : Double,
     val productDate : String,
     val productStatus : Boolean
 )
