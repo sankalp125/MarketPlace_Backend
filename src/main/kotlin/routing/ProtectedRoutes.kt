@@ -390,9 +390,7 @@ fun Routing.protectedRoutes() {
                 )
                 val multipart = call.receiveMultipart()
                 var productId = ""
-                var uploadStream: InputStream? = null
-                var fileName: String? = null
-                var fileUrl = ""
+                val fileFields = mutableListOf<Pair<InputStream, String>>()
                 multipart.forEachPart { part ->
                     when (part) {
                         is PartData.FormItem -> {
@@ -403,8 +401,9 @@ fun Routing.protectedRoutes() {
 
                         is PartData.FileItem -> {
                             if (part.originalFileName != null) {
-                                fileName = part.originalFileName
-                                uploadStream = part.streamProvider().readBytes().inputStream()
+                                fileFields.add(
+                                    part.streamProvider().readBytes().inputStream() to part.originalFileName!!
+                                )
                             }
                         }
 
@@ -412,18 +411,20 @@ fun Routing.protectedRoutes() {
                     }
                     part.dispose()
                 }
-                if (productId == "" || uploadStream == null || fileName == null) {
+                if (productId == "" || fileFields.isEmpty()) {
                     return@put call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Parameter missing!"))
                 }
                 try {
                     val fileService = FileHandler
-                    fileUrl = fileService.uploadSingleFile(uploadStream, fileName!!)
-                    val pictureItem = ProductUrl(
-                        prodId = productId,
-                        photoUrl = fileUrl
-                    )
-                    ProductRepository.addProductUrl(pictureItem)
-                    call.respond(HttpStatusCode.OK, mapOf("message" to "Picture added successfully"))
+                    val urls = fileService.uploadMultipleFile(fileFields)
+                    urls.forEach { url ->
+                        val prodUrl = ProductUrl(
+                            prodId = productId,
+                            photoUrl = url
+                        )
+                        ProductRepository.addProductUrl(prodUrl)
+                    }
+                    call.respond(HttpStatusCode.OK, mapOf("message" to "Pictures added successfully"))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
