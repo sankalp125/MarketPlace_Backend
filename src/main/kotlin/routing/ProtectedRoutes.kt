@@ -1,11 +1,13 @@
 package com.example.routing
 
 import com.example.DTO.AddProductDto
+import com.example.DTO.DeletePictureDto
 import com.example.DTO.ProductDetailsDto
 import com.example.DTO.UpdatePasswordDto
 import com.example.DTO.UpdateProductDto
 import com.example.DTO.UpdateProfileDetailsDto
 import com.example.DTO.validateAddProductDto
+import com.example.DTO.validateDeletePictureDto
 import com.example.DTO.validateProductDetailsDto
 import com.example.DTO.validateProfileData
 import com.example.DTO.validateUpdatePassword
@@ -59,35 +61,35 @@ fun Routing.protectedRoutes() {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "${e.message}"))
                 }
             }
-            get("/my-products"){
+            get("/my-products") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject
-                if (userId == null){
+                if (userId == null) {
                     call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token: Missing user ID"))
                     return@get
                 }
                 try {
                     val myProducts = ProductRepository.getMyProducts(userId = UUID.fromString(userId))
-                    if (myProducts.isEmpty()){
+                    if (myProducts.isEmpty()) {
                         call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "No products found"))
-                    }else{
+                    } else {
                         call.respond(HttpStatusCode.OK, myProducts)
                     }
-                }catch (e : Exception){
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "Error: ${e.message}"))
                 }
             }
-            get("/profile-picture"){
+            get("/profile-picture") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject
-                if (userId == null){
+                if (userId == null) {
                     call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token: Missing user ID"))
                     return@get
                 }
                 try {
                     val photoUrl = UserRepository.getProfilePicture(UUID.fromString(userId))
                     call.respond(HttpStatusCode.OK, mapOf("url" to photoUrl))
-                }catch (e : Exception){
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
@@ -163,7 +165,10 @@ fun Routing.protectedRoutes() {
                         } else {
                             try {
                                 UserRepository.updateProfilePicture(UUID.fromString(userId), profilePictureUrl)
-                                call.respond(HttpStatusCode.OK, mapOf("message" to "Profile picture updated successfully"))
+                                call.respond(
+                                    HttpStatusCode.OK,
+                                    mapOf("message" to "Profile picture updated successfully")
+                                )
                             } catch (e: Exception) {
                                 return@put call.respond(
                                     HttpStatusCode.InternalServerError,
@@ -308,8 +313,11 @@ fun Routing.protectedRoutes() {
                                         )
                                         ProductRepository.addProductUrl(prodUrl)
                                     }
-                                    call.respond(HttpStatusCode.Created, mapOf("message" to "Product added successfully"))
-                                }catch (e : Exception){
+                                    call.respond(
+                                        HttpStatusCode.Created,
+                                        mapOf("message" to "Product added successfully")
+                                    )
+                                } catch (e: Exception) {
                                     return@post call.respond(
                                         HttpStatusCode.Accepted,
                                         mapOf("message" to "Product added successfully but some error : ${e.localizedMessage} occurred in uploading images try to upload them by edit product!")
@@ -328,7 +336,7 @@ fun Routing.protectedRoutes() {
                 }
             }
 
-            get("/product-list"){
+            get("/product-list") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject ?: return@get call.respond(
                     HttpStatusCode.Unauthorized,
@@ -337,23 +345,26 @@ fun Routing.protectedRoutes() {
                 try {
                     val products = ProductRepository.getProductList(UUID.fromString(userId))
                     call.respond(HttpStatusCode.OK, products)
-                }catch (e : Exception){
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
 
-            get("/product-details/{product-id}"){
+            get("/product-details/{product-id}") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject ?: return@get call.respond(HttpStatusCode.Unauthorized, "Invalid Token")
-                val productId = call.parameters["product-id"] ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Product id can not be empty!"))
-                try{
+                val productId = call.parameters["product-id"] ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(error = "Product id can not be empty!")
+                )
+                try {
                     val productDetails = ProductRepository.getProductDetails(UUID.fromString(productId))
                     call.respond(HttpStatusCode.OK, productDetails)
-                }catch (e : Exception){
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
-            put("/update-product"){
+            put("/update-product") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject ?: return@put call.respond(
                     HttpStatusCode.Unauthorized,
@@ -361,17 +372,17 @@ fun Routing.protectedRoutes() {
                 )
                 val params = call.receive<UpdateProductDto>()
                 val errors = validateUpdateProductDto(params)
-                if (errors.isNotEmpty()){
+                if (errors.isNotEmpty()) {
                     return@put call.respond(HttpStatusCode.BadRequest, errors)
                 }
                 try {
                     ProductRepository.updateProductDetails(params)
                     call.respond(HttpStatusCode.OK, mapOf("message" to "Product updated successfully"))
-                }catch (e : Exception){
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
-            put("/add-product-picture"){
+            put("/add-product-picture") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject ?: return@put call.respond(
                     HttpStatusCode.Unauthorized,
@@ -379,27 +390,29 @@ fun Routing.protectedRoutes() {
                 )
                 val multipart = call.receiveMultipart()
                 var productId = ""
-                var uploadStream : InputStream? = null
-                var fileName : String? = null
+                var uploadStream: InputStream? = null
+                var fileName: String? = null
                 var fileUrl = ""
                 multipart.forEachPart { part ->
-                    when(part){
+                    when (part) {
                         is PartData.FormItem -> {
-                            if (part.name == "productId" && part.value != ""){
+                            if (part.name == "productId" && part.value != "") {
                                 productId = part.value
                             }
                         }
+
                         is PartData.FileItem -> {
-                            if (part.originalFileName != null){
+                            if (part.originalFileName != null) {
                                 fileName = part.originalFileName
                                 uploadStream = part.streamProvider().readBytes().inputStream()
                             }
                         }
+
                         else -> part.dispose()
                     }
                     part.dispose()
                 }
-                if (productId == "" || uploadStream == null || fileName == null){
+                if (productId == "" || uploadStream == null || fileName == null) {
                     return@put call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Parameter missing!"))
                 }
                 try {
@@ -411,7 +424,7 @@ fun Routing.protectedRoutes() {
                     )
                     ProductRepository.addProductUrl(pictureItem)
                     call.respond(HttpStatusCode.OK, mapOf("message" to "Picture added successfully"))
-                }catch (e : Exception){
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
@@ -435,11 +448,36 @@ fun Routing.protectedRoutes() {
                     val fileService = FileHandler
                     urls.forEach { url ->
                         fileService.deleteFileByUrl(url)
+                        ProductRepository.deleteProductPicture(url)
                     }
                     val photoUrl = ProductRepository.getProductPicture(UUID.fromString(params.productId))
                     fileService.deleteFileByUrl(photoUrl)
                     ProductRepository.deleteProduct(UUID.fromString(params.productId))
-                }catch (e : Exception){
+                    call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
+                }
+            }
+            delete("/delete-picture") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.subject ?: return@delete call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token")
+                )
+                try {
+                    val params = call.receive<DeletePictureDto>()
+                    if (validateDeletePictureDto(params)) {
+                        return@delete call.respond(
+                            HttpStatusCode.BadRequest,
+                            ErrorResponse(error = "Parameter missing!")
+                        )
+                    } else {
+                        val fileService = FileHandler
+                        fileService.deleteFileByUrl(params.url)
+                        ProductRepository.deleteProductPicture(params.url)
+                        call.respond(HttpStatusCode.OK, mapOf("message" to "Picture deleted successfully"))
+                    }
+                } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }

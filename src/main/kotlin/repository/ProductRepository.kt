@@ -224,4 +224,8 @@ object ProductRepository {
             .select { ProductTable.uploadedBy eq userId }
             .map { mapToMyProducts(it) }
     }
+
+    fun deleteProductPicture(url : String) = transaction {
+        ProductPicturesTable.deleteWhere { ProductPicturesTable.photoUrl eq url }
+    }
 }
