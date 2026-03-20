@@ -44,6 +44,8 @@ data class ProductDetails(
     val category : String,
     val description : String,
     val price : Double,
+    val date : String,
+    val status : Boolean,
     val forCountry : String,
     val forState : String,
     val forCity : String,

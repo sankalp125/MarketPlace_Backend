@@ -22,7 +22,6 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -64,7 +63,7 @@ object ProductRepository {
         }
     }
 
-    fun deactivateExpiredProduct()  = transaction{
+    fun deactivateExpiredProduct() = transaction {
         try {
             val currentDate = LocalDate.now().toString()
             ProductTable.update({ ProductTable.productEndDate less currentDate and ProductTable.active eq Op.TRUE }) {
@@ -76,8 +75,8 @@ object ProductRepository {
         }
     }
 
-    private fun mapToSingleProduct(row: ResultRow): ProductListResponse  {
-         return ProductListResponse(
+    private fun mapToSingleProduct(row: ResultRow): ProductListResponse {
+        return ProductListResponse(
             productId = row[ProductTable.productId].toString(),
             productName = row[ProductTable.productName],
             productDesc = row[ProductTable.productDescription],
@@ -129,11 +128,13 @@ object ProductRepository {
     }
 
     private fun mapToProductDetails(row: ResultRow): ProductDetails {
-         return ProductDetails(
+        return ProductDetails(
             name = row[ProductTable.productName],
             category = getCategoryName(row[ProductTable.productCategory]),
             description = row[ProductTable.productDescription],
             price = row[ProductTable.productPrice],
+            date = row[ProductTable.productEndDate],
+            status = row[ProductTable.active],
             forCountry = getCountry(row[ProductTable.forCountry]),
             forState = getState(row[ProductTable.forState]),
             forCity = getCity(row[ProductTable.for_city]),
@@ -208,7 +209,7 @@ object ProductRepository {
         }
     }
 
-    private fun mapToMyProducts(row : ResultRow) : MyProductsListResponse {
+    private fun mapToMyProducts(row: ResultRow): MyProductsListResponse {
         return MyProductsListResponse(
             productId = row[ProductTable.productId].toString(),
             productName = row[ProductTable.productName],
@@ -219,13 +220,13 @@ object ProductRepository {
         )
     }
 
-    fun getMyProducts(userId : UUID) : List<MyProductsListResponse> = transaction {
+    fun getMyProducts(userId: UUID): List<MyProductsListResponse> = transaction {
         ProductTable
             .select { ProductTable.uploadedBy eq userId }
             .map { mapToMyProducts(it) }
     }
 
-    fun deleteProductPicture(url : String) = transaction {
+    fun deleteProductPicture(url: String) = transaction {
         ProductPicturesTable.deleteWhere { ProductPicturesTable.photoUrl eq url }
     }
 }
