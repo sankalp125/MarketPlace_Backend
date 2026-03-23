@@ -177,9 +177,9 @@ object ProductRepository {
         try {
             ProductTable
                 .update({ ProductTable.productId eq UUID.fromString(data.productId) }) {
-                    it[ProductTable.productPrice] = data.price
+                    it[ProductTable.productPrice] = data.price.toDouble()
                     it[ProductTable.productEndDate] = data.date
-                    it[ProductTable.active] = data.status
+                    it[ProductTable.active] = data.status.toBoolean()
                     it[ProductTable.updatedAt] = LocalDateTime.now()
                 }
         } catch (e: Exception) {

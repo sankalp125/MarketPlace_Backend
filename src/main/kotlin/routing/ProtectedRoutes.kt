@@ -430,45 +430,41 @@ fun Routing.protectedRoutes() {
                 }
             }
 
-            delete("/delete-product") {
+            delete("/delete-product/{product-id}") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject ?: return@delete call.respond(
                     HttpStatusCode.Unauthorized,
                     ErrorResponse(error = "Invalid Token!")
                 )
+                val productId = call.parameters["product-id"] ?: return@delete call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse(error = "Product id can not be empty!")
+                )
                 try {
-                    val params = call.receive<ProductDetailsDto>()
-                    val errors = validateProductDetailsDto(params)
-                    if (errors.isNotEmpty()) {
-                        return@delete call.respond(
-                            HttpStatusCode.BadRequest,
-                            ErrorResponse(error = "Parameter missing!")
-                        )
-                    }
-                    val urls = ProductRepository.getProductPictures(UUID.fromString(params.productId))
+                    val urls = ProductRepository.getProductPictures(UUID.fromString(productId))
                     val fileService = FileHandler
                     urls.forEach { url ->
                         fileService.deleteFileByUrl(url)
                         ProductRepository.deleteProductPicture(url)
                     }
-                    val photoUrl = ProductRepository.getProductPicture(UUID.fromString(params.productId))
+                    val photoUrl = ProductRepository.getProductPicture(UUID.fromString(productId))
                     fileService.deleteFileByUrl(photoUrl)
-                    ProductRepository.deleteProduct(UUID.fromString(params.productId))
+                    ProductRepository.deleteProduct(UUID.fromString(productId))
                     call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
-            delete("/delete-picture") {
+            put("/delete-picture") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject ?: return@delete call.respond(
+                val userId = principal?.subject ?: return@put call.respond(
                     HttpStatusCode.Unauthorized,
                     ErrorResponse(error = "Invalid Token")
                 )
                 try {
                     val params = call.receive<DeletePictureDto>()
                     if (validateDeletePictureDto(params)) {
-                        return@delete call.respond(
+                        return@put call.respond(
                             HttpStatusCode.BadRequest,
                             ErrorResponse(error = "Parameter missing!")
                         )

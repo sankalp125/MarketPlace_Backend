@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UpdateProductDto(
     val productId : String,
-    val price : Double,
+    val price : String,
     val date : String,
-    val status : Boolean
+    val status : String
 )
 
 fun validateUpdateProductDto(params : UpdateProductDto) : List<String> {
@@ -18,7 +18,7 @@ fun validateUpdateProductDto(params : UpdateProductDto) : List<String> {
     if (params.date.isBlank()){
         errorList.add("Date is required!")
     }
-    if (params.price.isNaN()){
+    if (params.price.isBlank()){
         errorList.add("Price is required!")
     }
     return errorList
