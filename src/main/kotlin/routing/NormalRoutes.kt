@@ -122,8 +122,10 @@ fun Routing.normalRoutes(){
                 }
                 val fileService = FileHandler
                 if (uploadedPhotoStream != null && uploadedPhotoName != null){
+                    val fileName = "${userParams.name}_${System.currentTimeMillis()}.jpg"
                     try {
-                        profilePhotoUrl = fileService.uploadSingleFile(uploadedPhotoStream, uploadedPhotoName!!)
+//                        profilePhotoUrl = fileService.uploadSingleFile(uploadedPhotoStream, uploadedPhotoName!!)
+                        profilePhotoUrl = fileService.uploadSingleFile(uploadedPhotoStream, fileName)
                     }catch (e : Exception){
                         return@post call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Photo upload failed ${e.localizedMessage}"))
                     }

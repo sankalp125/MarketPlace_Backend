@@ -37,6 +37,7 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import java.io.InputStream
 import java.util.UUID
+import kotlin.collections.mapOf
 
 fun Routing.protectedRoutes() {
     route("/api/v1/protected") {
@@ -119,6 +120,11 @@ fun Routing.protectedRoutes() {
                     HttpStatusCode.Unauthorized,
                     ErrorResponse(error = "Invalid token")
                 )
+                val user = UserRepository.findUserById(UUID.fromString(userId))
+                val userName = user?.name ?: return@put call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("message" to "User not found")
+                )
                 val multipart = call.receiveMultipart()
                 var profilePictureName: String? = null
                 var profilePictureStream: InputStream? = null
@@ -141,8 +147,9 @@ fun Routing.protectedRoutes() {
                     }
                     val fileService = FileHandler
                     if (profilePictureStream != null && profilePictureName != null) {
+                        val fileName = "${userName}_${System.currentTimeMillis()}.jpg"
                         try {
-                            profilePictureUrl = fileService.uploadSingleFile(profilePictureStream, profilePictureName!!)
+                            profilePictureUrl = fileService.uploadSingleFile(profilePictureStream, fileName)
                         } catch (e: Exception) {
                             return@put call.respond(
                                 HttpStatusCode.BadRequest,
@@ -242,8 +249,10 @@ fun Routing.protectedRoutes() {
                                     pictureName = part.originalFileName
                                 } else {
                                     if (part.originalFileName != null) {
+                                        val prodName = formField["productName"] ?: ""
+                                        val fileName = "${prodName}_${System.currentTimeMillis()}.jpg"
                                         fileFields.add(
-                                            part.streamProvider().readBytes().inputStream() to part.originalFileName!!
+                                            part.streamProvider().readBytes().inputStream() to fileName
                                         )
                                     }
                                 }
@@ -255,8 +264,10 @@ fun Routing.protectedRoutes() {
                     }
                     val fileService = FileHandler
                     if (pictureStream != null && pictureName != null) {
+                        val prodName = formField["productName"] ?: ""
+                        val fileName = "${prodName}_main_${System.currentTimeMillis()}.jpg"
                         try {
-                            pictureUrl = fileService.uploadSingleFile(pictureStream, pictureName!!)
+                            pictureUrl = fileService.uploadSingleFile(pictureStream, fileName)
                         } catch (e: Exception) {
                             return@post call.respond(
                                 HttpStatusCode.InternalServerError,
@@ -401,8 +412,11 @@ fun Routing.protectedRoutes() {
 
                         is PartData.FileItem -> {
                             if (part.originalFileName != null) {
+                                val product = ProductRepository.getProductDetails(UUID.fromString(productId))
+                                val productName = product.name
+                                val fileName = "${productName}_${System.currentTimeMillis()}.jpg"
                                 fileFields.add(
-                                    part.streamProvider().readBytes().inputStream() to part.originalFileName!!
+                                    part.streamProvider().readBytes().inputStream() to fileName
                                 )
                             }
                         }
