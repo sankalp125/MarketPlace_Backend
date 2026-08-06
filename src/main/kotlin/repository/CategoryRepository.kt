@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object CategoryRepository {
     fun getCategories(): List<CategoryResponse> = transaction {
-        CategoriesTable.selectAll()
+        CategoriesTable.selectAll().orderBy(CategoriesTable.categoryName)
             .map {
                 CategoryResponse(
                     categoryId = it[CategoriesTable.categoryId].toString(),

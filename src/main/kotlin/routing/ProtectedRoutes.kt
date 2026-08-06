@@ -2,13 +2,11 @@ package com.example.routing
 
 import com.example.DTO.AddProductDto
 import com.example.DTO.DeletePictureDto
-import com.example.DTO.ProductDetailsDto
 import com.example.DTO.UpdatePasswordDto
 import com.example.DTO.UpdateProductDto
 import com.example.DTO.UpdateProfileDetailsDto
 import com.example.DTO.validateAddProductDto
 import com.example.DTO.validateDeletePictureDto
-import com.example.DTO.validateProductDetailsDto
 import com.example.DTO.validateProfileData
 import com.example.DTO.validateUpdatePassword
 import com.example.DTO.validateUpdateProductDto
